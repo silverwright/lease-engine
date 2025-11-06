@@ -7,8 +7,17 @@ export function calculateIFRS16(leaseData: Partial<LeaseData>): CalculationResul
   const paymentFrequency = leaseData.PaymentFrequency || 'Monthly';
   const ibrAnnual = leaseData.IBR_Annual || 0.14;
   const paymentTiming = leaseData.PaymentTiming || 'Advance';
-  
-  const periods = Math.round(nonCancellableYears * getPeriodsPerYear(paymentFrequency));
+
+  // IFRS 16: Include renewal option if reasonably certain (likelihood >= 0.5 or 50%)
+  const renewalYears = leaseData.RenewalOptionYears || 0;
+  const renewalLikelihood = leaseData.RenewalOptionLikelihood || 0;
+
+  let totalLeaseYears = nonCancellableYears;
+  if (renewalYears > 0 && renewalLikelihood >= 0.5) {
+    totalLeaseYears = nonCancellableYears + renewalYears;
+  }
+
+  const periods = Math.round(totalLeaseYears * getPeriodsPerYear(paymentFrequency));
   const ratePerPeriod = Math.pow(1 + ibrAnnual, 1 / getPeriodsPerYear(paymentFrequency)) - 1;
 
   // Calculate PV of lease payments
