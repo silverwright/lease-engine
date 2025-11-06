@@ -116,18 +116,15 @@ export function Home() {
   return (
     <div className="w-full font-sans">
       {/* Hero Section */}
-      <section
-        className="relative w-screen min-h-screen flex flex-col items-center justify-center text-center bg-cover bg-center -mt-16 md:-mt-20"
- 
->
+      <section className="relative w-screen min-h-screen flex flex-col items-center justify-center text-center bg-cover bg-center -mt-16 md:-mt-20">
         <img
-          src="/LandingPage.jpg"
+          src="/Picture1.png"
           alt="Landing Background"
           className="absolute inset-0 w-full h-full object-cover z-0"
         />
-  
+
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-black/20"></div>
 
         {/* Content */}
         <div className="relative z-10 px-4">
