@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useLeaseContext } from '../../context/LeaseContext';
 import { KPICard } from '../Dashboard/KPICard';
 import { Button } from '../UI/Button';
-import { DollarSign, TrendingDown, FileText, Download, BarChart3 } from 'lucide-react';
+import { DollarSign, TrendingDown, FileText, Download, BarChart3, RefreshCw } from 'lucide-react';
+import { calculateIFRS16 } from '../../utils/ifrs16Calculator';
 
 export function ResultsDisplay() {
-  const { state } = useLeaseContext();
+  const { state, dispatch } = useLeaseContext();
   const { calculations, leaseData } = state;
   const [activeTab, setActiveTab] = useState('summary');
+  const [recalculating, setRecalculating] = useState(false);
 
   if (!calculations) return null;
 
@@ -21,6 +23,24 @@ export function ResultsDisplay() {
     console.log('Exporting to Excel...');
   };
 
+  const handleRecalculate = async () => {
+    setRecalculating(true);
+    dispatch({ type: 'SET_LOADING', payload: true });
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const results = calculateIFRS16(leaseData);
+      dispatch({ type: 'SET_CALCULATIONS', payload: results });
+      dispatch({ type: 'SET_ERROR', payload: null });
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: 'Recalculation failed. Please check your inputs.' });
+    } finally {
+      setRecalculating(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return `${leaseData.Currency || 'NGN'} ${value.toLocaleString()}`;
   };
@@ -29,14 +49,34 @@ export function ResultsDisplay() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-900">Calculation Results</h3>
-        <Button
-          variant="outline"
-          onClick={exportToExcel}
-          className="flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Export to Excel
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRecalculate}
+            disabled={recalculating}
+            className="flex items-center gap-2"
+          >
+            {recalculating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" />
+                Recalculating...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                Recalculate
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={exportToExcel}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export to Excel
+          </Button>
+        </div>
       </div>
 
       {/* Enhanced KPI Summary with gradient backgrounds */}
