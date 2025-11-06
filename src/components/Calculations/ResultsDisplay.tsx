@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLeaseContext } from '../../context/LeaseContext';
 import { KPICard } from '../Dashboard/KPICard';
 import { Button } from '../UI/Button';
-import { DollarSign, TrendingDown, FileText, Download, BarChart3, RefreshCw } from 'lucide-react';
+import { DollarSign, TrendingDown, FileText, Download, BarChart3, RefreshCw, Edit2 } from 'lucide-react';
 import { calculateIFRS16 } from '../../utils/ifrs16Calculator';
 
 export function ResultsDisplay() {
+  const navigate = useNavigate();
   const { state, dispatch } = useLeaseContext();
   const { calculations, leaseData } = state;
   const [activeTab, setActiveTab] = useState('summary');
   const [recalculating, setRecalculating] = useState(false);
+
+  const handleEditContract = () => {
+    navigate('/contract-initiation');
+  };
 
   if (!calculations) return null;
 
@@ -50,6 +56,14 @@ export function ResultsDisplay() {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-900">Calculation Results</h3>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleEditContract}
+            className="flex items-center gap-2"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit Contract
+          </Button>
           <Button
             variant="outline"
             onClick={handleRecalculate}
