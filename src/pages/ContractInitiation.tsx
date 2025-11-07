@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLeaseContext, SavedContract } from '../context/LeaseContext';
+import { useSearchParams } from 'react-router-dom';
 import { ModeSelector } from '../components/Contract/ModeSelector';
 import { BasicInfoForm } from '../components/Contract/BasicInfoForm';
 import { PaymentDetailsForm } from '../components/Contract/PaymentDetailsForm';
@@ -22,10 +23,20 @@ const steps = [
 
 export function ContractInitiation() {
   const { state, dispatch } = useLeaseContext();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [modeSelected, setModeSelected] = useState(false);
   const [activeTab, setActiveTab] = useState<'form' | 'import' | 'list'>('list');
   const [editingContract, setEditingContract] = useState<SavedContract | null>(null);
+
+  useEffect(() => {
+    const isEditMode = searchParams.get('edit') === 'true';
+    if (isEditMode && state.leaseData.ContractID) {
+      setModeSelected(true);
+      setActiveTab('form');
+      setCurrentStep(1);
+    }
+  }, [searchParams, state.leaseData.ContractID]);
 
   // Filter steps based on mode
   const activeSteps = state.mode === 'FULL'
