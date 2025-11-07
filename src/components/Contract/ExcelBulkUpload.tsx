@@ -54,6 +54,8 @@ export function ExcelBulkUpload({ onUploadComplete }: ExcelBulkUploadProps) {
       'RenewalOptionLikelihood': 'RenewalOptionLikelihood',
       'Termination Option Point': 'TerminationOptionPoint',
       'TerminationOptionPoint': 'TerminationOptionPoint',
+      'Termination Likelihood': 'TerminationOptionLikelihood',
+      'TerminationOptionLikelihood': 'TerminationOptionLikelihood',
       'Termination Penalty Expected': 'TerminationPenaltyExpected',
       'TerminationPenaltyExpected': 'TerminationPenaltyExpected',
       'Termination Reasonably Certain': 'TerminationReasonablyCertain',
@@ -194,7 +196,7 @@ export function ExcelBulkUpload({ onUploadComplete }: ExcelBulkUploadProps) {
         // Handle numeric fields
         const numericFields = [
           'NonCancellableYears', 'RenewalOptionYears', 'RenewalOptionLikelihood',
-          'TerminationPenaltyExpected', 'FixedPaymentPerPeriod', 'BaseCPI',
+          'TerminationOptionLikelihood', 'TerminationPenaltyExpected', 'FixedPaymentPerPeriod', 'BaseCPI',
           'CPIResetMonth', 'FirstResetYearOffset', 'FixedEscalationPct',
           'VariablePaymentsInSubstanceFixed', 'VariablePaymentsUsageExpected',
           'RVGExpected', 'PurchaseOptionPrice', 'InitialDirectCosts',
@@ -205,7 +207,7 @@ export function ExcelBulkUpload({ onUploadComplete }: ExcelBulkUploadProps) {
         if (numericFields.includes(leaseKey)) {
           value = parseFloat(value);
           // Convert percentages if greater than 1
-          if (['IBR_Annual', 'RenewalOptionLikelihood', 'FixedEscalationPct'].includes(leaseKey) && value > 1) {
+          if (['IBR_Annual', 'RenewalOptionLikelihood', 'TerminationOptionLikelihood', 'FixedEscalationPct'].includes(leaseKey) && value > 1) {
             value = value / 100;
           }
         }
@@ -485,7 +487,7 @@ export function ExcelBulkUpload({ onUploadComplete }: ExcelBulkUploadProps) {
               <p className="font-semibold text-slate-900 mb-2">⚙️ Optional Columns - Advanced Options:</p>
               <div className="bg-slate-100 border border-slate-300 rounded p-3 mb-2">
                 <code className="text-xs break-words">
-                  Renewal Option Years | Renewal Likelihood | Termination Option Point | Termination Penalty Expected | Termination Reasonably Certain | Purchase Option Price | Purchase Option Reasonably Certain | RVG Expected | RVG Reasonably Certain | Variable Payments In Substance Fixed | Variable Payments Usage Expected | Low Value Exemption | Short Term Exemption | Separate Non Lease Components | Allocation Basis | FX Policy | Judgement Notes | Approval Signoff
+                  Renewal Option Years | Renewal Likelihood | Termination Option Point | Termination Likelihood | Termination Penalty Expected | Termination Reasonably Certain | Purchase Option Price | Purchase Option Reasonably Certain | RVG Expected | RVG Reasonably Certain | Variable Payments In Substance Fixed | Variable Payments Usage Expected | Low Value Exemption | Short Term Exemption | Separate Non Lease Components | Allocation Basis | FX Policy | Judgement Notes | Approval Signoff
                 </code>
               </div>
             </div>

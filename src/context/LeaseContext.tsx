@@ -18,6 +18,7 @@ export interface LeaseData {
   RenewalOptionYears: number;
   RenewalOptionLikelihood: number;
   TerminationOptionPoint: string;
+  TerminationOptionLikelihood: number;
   TerminationPenaltyExpected: number;
   TerminationReasonablyCertain: boolean;
   

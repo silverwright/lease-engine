@@ -30,7 +30,7 @@ export function AdvancedOptionsForm() {
             onChange={(value) => updateField('RenewalOptionYears', Number(value))}
             placeholder="3"
           />
-          
+
           <FormField
             label="Renewal Likelihood (0-1)"
             type="number"
@@ -41,14 +41,25 @@ export function AdvancedOptionsForm() {
             min="0"
             max="1"
           />
-          
+
           <FormField
             label="Termination Option Point"
             value={leaseData.TerminationOptionPoint || ''}
             onChange={(value) => updateField('TerminationOptionPoint', value)}
             placeholder="End of Year 4"
           />
-          
+
+          <FormField
+            label="Termination Likelihood (0-1)"
+            type="number"
+            step="0.01"
+            value={leaseData.TerminationOptionLikelihood || ''}
+            onChange={(value) => updateField('TerminationOptionLikelihood', Number(value))}
+            placeholder="0.20"
+            min="0"
+            max="1"
+          />
+
           <FormField
             label="Termination Penalty"
             type="number"
