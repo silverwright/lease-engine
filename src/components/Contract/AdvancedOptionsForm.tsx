@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLeaseContext } from '../../context/LeaseContext';
 import { FormField } from '../UI/FormField';
 import { Switch } from '../UI/Switch';
+import { AlertTriangle, X } from 'lucide-react';
+import { Button } from '../UI/Button';
 
 export function AdvancedOptionsForm() {
   const { state, dispatch } = useLeaseContext();
   const { leaseData } = state;
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationMessage, setValidationMessage] = useState('');
 
   const updateField = (field: string, value: any) => {
     dispatch({
       type: 'SET_LEASE_DATA',
       payload: { [field]: value }
     });
+  };
+
+  const handleTerminationPointChange = (value: string) => {
+    const terminationYears = parseFloat(value);
+    const nonCancellableYears = leaseData.NonCancellableYears || 0;
+
+    if (!isNaN(terminationYears) && terminationYears < nonCancellableYears) {
+      setValidationMessage(
+        `Termination period (${terminationYears} years) cannot be less than the non-cancellable period (${nonCancellableYears} years). Please enter a valid termination period.`
+      );
+      setShowValidationModal(true);
+      return;
+    }
+
+    updateField('TerminationOptionPoint', value);
   };
 
   return (
@@ -43,10 +62,11 @@ export function AdvancedOptionsForm() {
           />
 
           <FormField
-            label="Termination Option Point"
+            label="Termination Option Point (years)"
+            type="number"
             value={leaseData.TerminationOptionPoint || ''}
-            onChange={(value) => updateField('TerminationOptionPoint', value)}
-            placeholder="End of Year 4"
+            onChange={handleTerminationPointChange}
+            placeholder="4"
           />
 
           <FormField
@@ -162,7 +182,7 @@ export function AdvancedOptionsForm() {
       {/* Governance */}
       <div className="border-t pt-6 space-y-4">
         <h4 className="text-md font-semibold text-slate-900">Governance & Approval</h4>
-        
+
         <FormField
           label="Judgement Notes"
           value={leaseData.JudgementNotes || ''}
@@ -170,7 +190,7 @@ export function AdvancedOptionsForm() {
           placeholder="Renewal likely due to site economics"
           multiline
         />
-        
+
         <FormField
           label="Approval Sign-off"
           value={leaseData.ApprovalSignoff || ''}
@@ -178,6 +198,39 @@ export function AdvancedOptionsForm() {
           placeholder="CFO – 14-Aug-2025"
         />
       </div>
+
+      {/* Validation Modal */}
+      {showValidationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900">Validation Error</h3>
+              </div>
+              <button
+                onClick={() => setShowValidationModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-slate-700">{validationMessage}</p>
+            </div>
+            <div className="flex justify-end p-6 border-t border-slate-200">
+              <Button
+                onClick={() => setShowValidationModal(false)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                OK
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
