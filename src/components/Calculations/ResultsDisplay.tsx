@@ -14,7 +14,7 @@ export function ResultsDisplay() {
   const [recalculating, setRecalculating] = useState(false);
 
   const handleEditContract = () => {
-    navigate('/contract-initiation?edit=true');
+    navigate('/contract?edit=true');
   };
 
   if (!calculations) return null;
