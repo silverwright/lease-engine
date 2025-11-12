@@ -66,7 +66,11 @@ export function calculateIFRS16(leaseData: Partial<LeaseData>): CalculationResul
     cashflowSchedule,
     amortizationSchedule,
     depreciationSchedule,
-    journalEntries
+    journalEntries,
+    leaseTermYears: totalLeaseYears,
+    nonCancellableYears: nonCancellableYears,
+    renewalYears: renewalYears,
+    terminationYears: terminationYears
   };
 }
 

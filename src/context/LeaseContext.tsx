@@ -102,6 +102,10 @@ export interface CalculationResults {
   amortizationSchedule: any[];
   depreciationSchedule: any[];
   journalEntries: any[];
+  leaseTermYears: number;
+  nonCancellableYears: number;
+  renewalYears: number;
+  terminationYears: number;
 }
 
 interface LeaseState {

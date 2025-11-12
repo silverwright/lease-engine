@@ -191,9 +191,25 @@ export function ResultsDisplay() {
                     <span className="text-slate-600">Initial ROU Asset:</span>
                     <span className="font-bold text-emerald-600">{formatCurrency(calculations.initialROU)}</span>
                   </div>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                    <span className="text-slate-600">Non-cancellable Period:</span>
+                    <span className="font-medium">{calculations.nonCancellableYears} years</span>
+                  </div>
+                  {calculations.renewalYears > 0 && (
+                    <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                      <span className="text-slate-600">Renewal Period:</span>
+                      <span className="font-medium">{calculations.renewalYears} years</span>
+                    </div>
+                  )}
+                  {calculations.terminationYears > 0 && (
+                    <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                      <span className="text-slate-600">Termination Point:</span>
+                      <span className="font-medium">{calculations.terminationYears} years</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-slate-600">Lease Term:</span>
-                    <span className="font-medium">{leaseData.NonCancellableYears || 0} years</span>
+                    <span className="text-slate-600 font-semibold">Lease Term (used):</span>
+                    <span className="font-bold text-slate-900">{calculations.leaseTermYears} years</span>
                   </div>
                 </div>
               </div>
