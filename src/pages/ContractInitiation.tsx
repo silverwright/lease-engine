@@ -31,12 +31,24 @@ export function ContractInitiation() {
 
   useEffect(() => {
     const isEditMode = searchParams.get('edit') === 'true';
-    if (isEditMode && state.leaseData.ContractID) {
+    const contractId = searchParams.get('contractId');
+
+    if (isEditMode && contractId) {
+      const contract = state.savedContracts.find(c => c.id === contractId);
+      if (contract) {
+        setEditingContract(contract);
+        dispatch({ type: 'SET_MODE', payload: contract.mode });
+        dispatch({ type: 'LOAD_CONTRACT', payload: contract.data });
+        setModeSelected(true);
+        setActiveTab('form');
+        setCurrentStep(1);
+      }
+    } else if (isEditMode && state.leaseData.ContractID) {
       setModeSelected(true);
       setActiveTab('form');
       setCurrentStep(1);
     }
-  }, [searchParams, state.leaseData.ContractID]);
+  }, [searchParams, state.savedContracts, dispatch]);
 
   // Filter steps based on mode
   const activeSteps = state.mode === 'FULL'

@@ -14,7 +14,14 @@ export function ResultsDisplay() {
   const [recalculating, setRecalculating] = useState(false);
 
   const handleEditContract = () => {
-    navigate('/contract?edit=true');
+    const currentContract = state.savedContracts.find(
+      contract => contract.data.ContractID === leaseData.ContractID
+    );
+    if (currentContract) {
+      navigate(`/contract?edit=true&contractId=${currentContract.id}`);
+    } else {
+      navigate('/contract?edit=true');
+    }
   };
 
   if (!calculations) return null;
