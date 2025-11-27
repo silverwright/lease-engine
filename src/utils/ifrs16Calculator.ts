@@ -32,15 +32,22 @@ export function calculateIFRS16(leaseData: Partial<LeaseData>): CalculationResul
   const periods = Math.round(totalLeaseYears * getPeriodsPerYear(paymentFrequency));
   const ratePerPeriod = Math.pow(1 + ibrAnnual, 1 / getPeriodsPerYear(paymentFrequency)) - 1;
 
+  // Get RVG if reasonably certain
+  const rvgExpected = leaseData.RVGExpected || 0;
+  const rvgReasonablyCertain = leaseData.RVGReasonablyCertain || false;
+  const rvgAmount = rvgReasonablyCertain ? rvgExpected : 0;
+
   // Calculate PV of lease payments
   let pv = 0;
   const isAdvance = paymentTiming === 'Advance';
 
   for (let i = 1; i <= periods; i++) {
+    // Add RVG to the last payment period
+    const periodPayment = (i === periods) ? paymentPerPeriod + rvgAmount : paymentPerPeriod;
     const discountFactor = isAdvance ?
       1 / Math.pow(1 + ratePerPeriod, i - 1) :
       1 / Math.pow(1 + ratePerPeriod, i);
-    pv += paymentPerPeriod * discountFactor;
+    pv += periodPayment * discountFactor;
   }
 
   let initialLiability = Math.round(pv * 100) / 100;
@@ -56,8 +63,8 @@ export function calculateIFRS16(leaseData: Partial<LeaseData>): CalculationResul
   const initialROU = initialLiability + idc + prepayments - incentives;
 
   // Generate schedules
-  const cashflowSchedule = generateCashflowSchedule(leaseData, periods);
-  const amortizationSchedule = generateAmortizationSchedule(initialLiability, paymentPerPeriod, ratePerPeriod, periods, initialROU);
+  const cashflowSchedule = generateCashflowSchedule(leaseData, periods, rvgAmount);
+  const amortizationSchedule = generateAmortizationSchedule(initialLiability, paymentPerPeriod, ratePerPeriod, periods, initialROU, rvgAmount);
   const depreciationSchedule = generateDepreciationSchedule(initialROU, periods);
   const journalEntries = generateJournalEntries(leaseData, initialLiability, initialROU, amortizationSchedule, depreciationSchedule);
 
@@ -90,7 +97,7 @@ function getPeriodsPerYear(frequency: string): number {
   return map[frequency] || 12;
 }
 
-function generateCashflowSchedule(leaseData: Partial<LeaseData>, periods: number) {
+function generateCashflowSchedule(leaseData: Partial<LeaseData>, periods: number, rvgAmount: number) {
   const schedule = [];
   const startDate = new Date(leaseData.CommencementDate || '2025-01-01');
   const paymentAmount = leaseData.FixedPaymentPerPeriod || 0;
@@ -100,33 +107,39 @@ function generateCashflowSchedule(leaseData: Partial<LeaseData>, periods: number
   for (let i = 1; i <= periods; i++) {
     const paymentDate = new Date(startDate);
     paymentDate.setMonth(startDate.getMonth() + (i - 1) * monthsPerPeriod);
-    
+
+    // Add RVG to the last payment period
+    const periodRent = (i === periods) ? paymentAmount + rvgAmount : paymentAmount;
+
     schedule.push({
       period: i,
       date: paymentDate.toISOString().split('T')[0],
-      rent: paymentAmount
+      rent: periodRent
     });
   }
 
   return schedule;
 }
 
-function generateAmortizationSchedule(initialLiability: number, payment: number, rate: number, periods: number, initialROU: number) {
+function generateAmortizationSchedule(initialLiability: number, payment: number, rate: number, periods: number, initialROU: number, rvgAmount: number) {
   const schedule = [];
   let opening = initialLiability;
   let remainingAsset = initialROU;
   const depreciationPerPeriod = initialROU / periods;
 
   for (let i = 1; i <= periods; i++) {
+    // Add RVG to the last payment period
+    const periodPayment = (i === periods) ? payment + rvgAmount : payment;
+
     const interest = Math.round(opening * rate * 100) / 100;
-    const principal = Math.round((payment - interest) * 100) / 100;
+    const principal = Math.round((periodPayment - interest) * 100) / 100;
     const closing = Math.round((opening - principal) * 100) / 100;
     const depreciation = Math.round(depreciationPerPeriod * 100) / 100;
     remainingAsset = Math.round((remainingAsset - depreciation) * 100) / 100;
 
     schedule.push({
       month: i,
-      payment: payment,
+      payment: periodPayment,
       interest: interest,
       principal: principal,
       remainingLiability: Math.max(0, closing),
