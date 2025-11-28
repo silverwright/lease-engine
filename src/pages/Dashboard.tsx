@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useLeaseContext } from '../context/LeaseContext';
-import { 
-  FileText, 
-  Calculator, 
-  DollarSign, 
-  Calendar, 
-  TrendingUp, 
+import { calculateIFRS16 } from '../utils/ifrs16Calculator';
+import {
+  FileText,
+  Calculator,
+  DollarSign,
+  Calendar,
+  TrendingUp,
   TrendingDown,
   AlertCircle,
   BarChart3,
@@ -17,7 +18,56 @@ import {
 
 export function Dashboard() {
   const { state } = useLeaseContext();
-  const { calculations, leaseData } = state;
+  const { savedContracts } = state;
+
+  // Calculate aggregated totals from all saved contracts
+  const aggregatedData = useMemo(() => {
+    let totalROU = 0;
+    let totalLiability = 0;
+    let totalInterest = 0;
+    let totalDepreciation = 0;
+    let totalLeaseTermYears = 0;
+    const validContracts = [];
+
+    for (const contract of savedContracts) {
+      const data = contract.data;
+
+      // Check if contract has required data
+      const hasRequiredData = !!(
+        data.ContractID &&
+        data.CommencementDate &&
+        data.NonCancellableYears &&
+        data.FixedPaymentPerPeriod &&
+        data.IBR_Annual
+      );
+
+      if (hasRequiredData) {
+        try {
+          const results = calculateIFRS16(data);
+          totalROU += results.initialROU;
+          totalLiability += results.initialLiability;
+          totalInterest += results.totalInterest;
+          totalDepreciation += results.totalDepreciation;
+          totalLeaseTermYears += results.leaseTermYears;
+          validContracts.push({ contract, results });
+        } catch (error) {
+          console.error(`Failed to calculate for contract ${data.ContractID}:`, error);
+        }
+      }
+    }
+
+    const avgLeaseTermYears = validContracts.length > 0 ? totalLeaseTermYears / validContracts.length : 0;
+
+    return {
+      totalROU,
+      totalLiability,
+      totalInterest,
+      totalDepreciation,
+      avgLeaseTermYears,
+      validContracts,
+      totalContracts: savedContracts.length
+    };
+  }, [savedContracts]);
 
   // Mock data for demonstration - in real app this would come from API
   const portfolioData = [
@@ -63,8 +113,9 @@ export function Dashboard() {
             <TrendingUp className="w-4 h-4 text-green-500" />
           </div>
           <div className="text-2xl font-bold text-green-600">
-            {calculations ? `₦${(calculations.initialROU / 1000000).toFixed(1)}M` : '₦0.0M'}
+            {aggregatedData.totalROU > 0 ? `₦${(aggregatedData.totalROU / 1000000).toFixed(1)}M` : '₦0.0M'}
           </div>
+          <p className="text-xs text-slate-500 mt-1">{aggregatedData.validContracts.length} calculated</p>
         </div>
 
         {/* Total Liabilities */}
@@ -74,8 +125,9 @@ export function Dashboard() {
             <DollarSign className="w-4 h-4 text-blue-500" />
           </div>
           <div className="text-2xl font-bold text-blue-600">
-            {calculations ? `₦${(calculations.initialLiability / 1000000).toFixed(1)}M` : '₦0.0M'}
+            {aggregatedData.totalLiability > 0 ? `₦${(aggregatedData.totalLiability / 1000000).toFixed(1)}M` : '₦0.0M'}
           </div>
+          <p className="text-xs text-slate-500 mt-1">{aggregatedData.validContracts.length} calculated</p>
         </div>
 
         {/* Monthly Depreciation */}
@@ -85,8 +137,11 @@ export function Dashboard() {
             <Activity className="w-4 h-4 text-orange-500" />
           </div>
           <div className="text-2xl font-bold text-orange-600">
-            {calculations ? `₦${((calculations.totalDepreciation / (leaseData.NonCancellableYears || 1) / 12) / 1000).toFixed(0)}K` : '₦0K'}
+            {aggregatedData.totalDepreciation > 0
+              ? `₦${((aggregatedData.totalDepreciation / (aggregatedData.avgLeaseTermYears || 1) / 12) / 1000).toFixed(0)}K`
+              : '₦0K'}
           </div>
+          <p className="text-xs text-slate-500 mt-1">Average across portfolio</p>
         </div>
 
         {/* Monthly Interest */}
@@ -96,19 +151,23 @@ export function Dashboard() {
             <DollarSign className="w-4 h-4 text-red-500" />
           </div>
           <div className="text-2xl font-bold text-red-600">
-            {calculations ? `₦${((calculations.totalInterest / (leaseData.NonCancellableYears || 1) / 12) / 1000).toFixed(0)}K` : '₦0K'}
+            {aggregatedData.totalInterest > 0
+              ? `₦${((aggregatedData.totalInterest / (aggregatedData.avgLeaseTermYears || 1) / 12) / 1000).toFixed(0)}K`
+              : '₦0K'}
           </div>
+          <p className="text-xs text-slate-500 mt-1">Average across portfolio</p>
         </div>
 
         {/* Active Contracts */}
         <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-600">Active Contracts</span>
+            <span className="text-sm text-slate-600">Total Contracts</span>
             <FileText className="w-4 h-4 text-purple-500" />
           </div>
           <div className="text-2xl font-bold text-purple-600">
-            {leaseData.ContractID ? '1' : '0'}
+            {aggregatedData.totalContracts}
           </div>
+          <p className="text-xs text-slate-500 mt-1">{aggregatedData.validContracts.length} with calculations</p>
         </div>
 
         {/* Expiring Soon */}
@@ -117,7 +176,14 @@ export function Dashboard() {
             <span className="text-sm text-slate-600">Expiring Soon</span>
             <Calendar className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-amber-600">3</div>
+          <div className="text-2xl font-bold text-amber-600">
+            {aggregatedData.validContracts.filter(vc => {
+              const endDate = new Date(vc.contract.data.EndDateOriginal || '');
+              const monthsToExpiry = (endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30);
+              return monthsToExpiry <= 6 && monthsToExpiry > 0;
+            }).length}
+          </div>
+          <p className="text-xs text-slate-500 mt-1">Next 6 months</p>
         </div>
       </div>
 

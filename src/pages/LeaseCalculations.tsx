@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLeaseContext, SavedContract } from '../context/LeaseContext';
-import { CalculationEngine } from '../components/Calculations/CalculationEngine';
 import { ResultsDisplay } from '../components/Calculations/ResultsDisplay';
 import { ContractSelector } from '../components/Contract/ContractSelector';
 import { Calculator, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '../components/UI/Button';
+import { calculateIFRS16 } from '../utils/ifrs16Calculator';
 
 export function LeaseCalculations() {
   const { state, dispatch } = useLeaseContext();
   const { leaseData, calculations } = state;
   const [selectedContract, setSelectedContract] = useState<SavedContract | null>(null);
+  const [calculating, setCalculating] = useState(false);
 
   const hasRequiredData = !!(
     leaseData.ContractID &&
@@ -21,7 +22,6 @@ export function LeaseCalculations() {
 
   const handleSelectContract = (contract: SavedContract) => {
     setSelectedContract(contract);
-    // Clear previous calculations first
     dispatch({ type: 'SET_CALCULATIONS', payload: null });
     dispatch({ type: 'LOAD_CONTRACT', payload: contract.data });
     dispatch({ type: 'SET_MODE', payload: contract.mode });
@@ -31,6 +31,30 @@ export function LeaseCalculations() {
     setSelectedContract(null);
     dispatch({ type: 'RESET' });
   };
+
+  // Automatically calculate when contract is selected and has required data
+  useEffect(() => {
+    if (selectedContract && hasRequiredData && !calculations) {
+      const runCalculation = async () => {
+        setCalculating(true);
+        dispatch({ type: 'SET_LOADING', payload: true });
+
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const results = calculateIFRS16(leaseData);
+          dispatch({ type: 'SET_CALCULATIONS', payload: results });
+          dispatch({ type: 'SET_ERROR', payload: null });
+        } catch (error) {
+          dispatch({ type: 'SET_ERROR', payload: 'Calculation failed. Please check your inputs.' });
+        } finally {
+          setCalculating(false);
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
+      };
+
+      runCalculation();
+    }
+  }, [selectedContract, hasRequiredData, leaseData, calculations, dispatch]);
 
   return (
     <div className="w-full min-h-screen p-6 space-y-6 bg-slate-100">
@@ -78,15 +102,21 @@ export function LeaseCalculations() {
         </div>
       )}
 
-      {/* Calculation Engine Box */}
-      {selectedContract && hasRequiredData && !calculations && (
-        <div className="bg-white rounded-lg border border-slate-200 shadow p-6">
-          <CalculationEngine />
+      {/* Calculating Indicator */}
+      {selectedContract && hasRequiredData && calculating && (
+        <div className="bg-white rounded-lg border border-slate-200 shadow p-8">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Calculating IFRS 16 Metrics</h3>
+              <p className="text-slate-600">Processing lease parameters and generating schedules...</p>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Results Display Box */}
-      {selectedContract && calculations && (
+      {selectedContract && calculations && !calculating && (
         <div className="bg-white rounded-lg border border-slate-200 shadow p-6">
           <ResultsDisplay />
         </div>
