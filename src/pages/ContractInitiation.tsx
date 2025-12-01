@@ -145,16 +145,16 @@ export function ContractInitiation() {
 
   if (!modeSelected && activeTab === 'form') {
     return (
-      <div className="w-full min-h-screen p-6 space-y-6 bg-slate-100">
-        <div className="bg-white rounded-lg border border-slate-200 p-6 flex items-start gap-3 shadow">
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <FileText className="w-6 h-6 text-blue-600" />
+      <div className="w-full min-h-screen p-6 space-y-6 bg-[#00223c]">
+        <div className="bg-gradient-to-r from-[#004478] to-[#005596] rounded-lg p-6 flex items-start gap-3 shadow-2xl border border-[#005596]/30">
+          <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg">
+            <FileText className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-white">
               Contract Initiation & Approval
             </h1>
-            <p className="text-slate-600">
+            <p className="text-gray-200">
               Select a mode to start creating your lease contract
             </p>
           </div>

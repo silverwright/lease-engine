@@ -88,26 +88,21 @@ export function generateContractHTML(leaseData: Partial<LeaseData>, mode: 'MINIM
         <p>This Agreement is the entire agreement. Amendments must be in writing signed by both Parties. Invalid provisions do not affect the remainder.</p>
 
         <h2 style="color: #black; margin-top: 1.5rem; font-weight: bold;">17. Signatures</h2>
-        <p>
-          <strong style="display: block; text-align: left;">Lessor:</strong>
-          <div style="margin-left: 35%;">
-            ${leaseData.LessorName || 'N/A'}<br>
-            By: ____________________<br>
-            Name: ____________________<br>
-            Title: Director<br>
-            Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}
-          </div>
-        </p>
-        <p style="margin-top: 2rem;">
-          <strong style="display: block; text-align: left;">Lessee:</strong>
-          <div style="margin-left: 35%;">
-            ${leaseData.LesseeEntity || 'N/A'}<br>
-            By: ____________________<br>
-            Name: ____________________<br>
-            Title: Authorized Signatory<br>
-            Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}
-          </div>
-        </p>
+        <table style="width: 100%; border: none; margin: 0.5rem 0;">
+          <tr><td style="border: none; padding: 4px 0; font-weight: bold;">Lessor:</td><td style="border: none; padding: 4px 0;">${leaseData.LessorName || 'N/A'}</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">By: ____________________</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Name: ____________________</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Title: Director</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}</td></tr>
+        </table>
+
+        <table style="width: 100%; border: none; margin: 1.5rem 0 0.5rem 0;">
+          <tr><td style="border: none; padding: 4px 0; font-weight: bold;">Lessee:</td><td style="border: none; padding: 4px 0;">${leaseData.LesseeEntity || 'N/A'}</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">By: ____________________</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Name: ____________________</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Title: Authorized Signatory</td></tr>
+          <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}</td></tr>
+        </table>
 
         <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ccc; font-size: 0.9em; color: #666;">
           <p><em>This is a system-generated contract preview. Final execution requires legal review and party signatures.</em></p>
@@ -274,26 +269,21 @@ return `
     <p>This Agreement (including Schedules) is the entire agreement. Amendments must be in writing signed by both Parties. Invalid provisions do not affect the remainder.</p>
 
     <h2 style="color: #black; margin-top: 1.5rem; font-weight: bold;">17. Signatures</h2>
-    <p>
-      <strong style="display: block; text-align: left;">Lessor:</strong>
-      <div style="margin-left: 35%;">
-        ${leaseData.LessorName || 'N/A'}<br>
-        By: ____________________<br>
-        Name: ____________________<br>
-        Title: Director<br>
-        Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}
-      </div>
-    </p>
-    <p style="margin-top: 2rem;">
-      <strong style="display: block; text-align: left;">Lessee:</strong>
-      <div style="margin-left: 35%;">
-        ${leaseData.LesseeEntity || 'N/A'}<br>
-        By: ____________________<br>
-        Name: ____________________<br>
-        Title: Authorized Signatory<br>
-        Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}
-      </div>
-    </p>
+    <table style="width: 100%; border: none; margin: 0.5rem 0;">
+      <tr><td style="border: none; padding: 4px 0; font-weight: bold;">Lessor:</td><td style="border: none; padding: 4px 0;">${leaseData.LessorName || 'N/A'}</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">By: ____________________</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Name: ____________________</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Title: Director</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}</td></tr>
+    </table>
+
+    <table style="width: 100%; border: none; margin: 1.5rem 0 0.5rem 0;">
+      <tr><td style="border: none; padding: 4px 0; font-weight: bold;">Lessee:</td><td style="border: none; padding: 4px 0;">${leaseData.LesseeEntity || 'N/A'}</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">By: ____________________</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Name: ____________________</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Title: Authorized Signatory</td></tr>
+      <tr><td style="border: none; padding: 4px 0;"></td><td style="border: none; padding: 4px 0;">Date: ${leaseData.ContractDate ? formatDate(leaseData.ContractDate) : '________'}</td></tr>
+    </table>
 
     <h2 style="color: #black; margin-top: 1.5rem; font-weight: bold;">Schedule 4 — Acceptance Certificate (Template)</h2>
     <p>Contract ID: ${leaseData.ContractID || 'N/A'} | Asset: ${leaseData.AssetDescription || 'N/A'} | Site: ${leaseData.AssetLocation || 'N/A'}<br>

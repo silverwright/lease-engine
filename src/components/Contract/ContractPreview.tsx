@@ -13,7 +13,32 @@ export function ContractPreview() {
   useEffect(() => {
     // Generate contract HTML when component mounts
     if (leaseData.ContractID) {
-      const html = generateContractHTML(leaseData, mode);
+      let html = generateContractHTML(leaseData, mode);
+
+      // Add custom CSS for signature tables
+      const customStyles = `
+        <style>
+          table[style*="border: none"] {
+            border: none !important;
+            margin: 0.5rem 0 !important;
+          }
+          table[style*="border: none"] td {
+            border: none !important;
+            padding: 4px 0 !important;
+          }
+          table[style*="border: none"] td:first-child {
+            width: auto;
+            padding-right: 20px !important;
+            white-space: nowrap;
+            font-weight: bold;
+          }
+          table[style*="border: none"] td:last-child {
+            padding-left: 0 !important;
+          }
+        </style>
+      `;
+      html = customStyles + html;
+
       dispatch({ type: 'SET_CONTRACT_HTML', payload: html });
     }
   }, [leaseData, mode, dispatch]);
@@ -45,10 +70,9 @@ export function ContractPreview() {
       const tagName = element.tagName.toLowerCase();
       const text = element.textContent?.trim() || '';
 
-      if (!text) return;
-
       switch (tagName) {
         case 'h1':
+          if (!text) return;
           checkPageBreak(15);
           pdf.setFontSize(18);
           pdf.setFont('helvetica', 'bold');
@@ -57,6 +81,7 @@ export function ContractPreview() {
           break;
 
         case 'h2':
+          if (!text) return;
           checkPageBreak(12);
           pdf.setFontSize(14);
           pdf.setFont('helvetica', 'bold');
@@ -67,14 +92,16 @@ export function ContractPreview() {
 
         case 'h4':
         case 'h5':
+          if (!text) return;
           checkPageBreak(10);
           pdf.setFontSize(12);
           pdf.setFont('helvetica', 'bold');
           pdf.text(text, margin, yPosition);
-          yPosition += 8;
+          yPosition += 6;
           break;
 
         case 'p':
+          if (!text) return;
           checkPageBreak(10);
           pdf.setFontSize(10);
           pdf.setFont('helvetica', 'normal');
@@ -87,27 +114,86 @@ export function ContractPreview() {
           checkPageBreak(20);
           pdf.setFontSize(9);
           const rows = Array.from(element.querySelectorAll('tr'));
+
+          // Check if this is a signature table (no borders)
+          const tableStyle = element.getAttribute('style') || '';
+          const isSignatureTable = tableStyle.includes('border: none');
+
           rows.forEach((row) => {
             const cells = Array.from(row.querySelectorAll('td'));
             if (cells.length === 2) {
-              checkPageBreak(10);
+              checkPageBreak(15);
               const label = cells[0].textContent?.trim() || '';
-              const value = cells[1].textContent?.trim() || '';
+              const valueCell = cells[1];
 
-              pdf.setFont('helvetica', 'bold');
-              pdf.text(label, margin, yPosition);
+              if (isSignatureTable) {
+                // Signature table - handle label and value
+                const value = valueCell.textContent?.trim() || '';
 
-              pdf.setFont('helvetica', 'normal');
-              const valueLines = pdf.splitTextToSize(value, maxWidth - 50);
-              pdf.text(valueLines, margin + 50, yPosition);
+                if (label) {
+                  // First row with "Lessor:" or "Lessee:" label
+                  pdf.setFont('helvetica', 'bold');
+                  pdf.setFontSize(10);
+                  pdf.text(label, margin, yPosition);
 
-              yPosition += Math.max(valueLines.length * 4.5, 6);
+                  if (value) {
+                    pdf.setFont('helvetica', 'normal');
+                    const signatureIndent = 70; // Match the indentation
+                    pdf.text(value, signatureIndent, yPosition);
+                  }
+                  yPosition += 5.5;
+                } else if (value) {
+                  // Subsequent rows - just the value indented
+                  pdf.setFont('helvetica', 'normal');
+                  pdf.setFontSize(10);
+                  const signatureIndent = 70;
+                  pdf.text(value, signatureIndent, yPosition);
+                  yPosition += 5.5;
+                }
+              } else {
+                // Regular data table
+                // Check if value cell contains <br> tags for multi-line content
+                const valueHTML = valueCell.innerHTML;
+                const hasBreaks = valueHTML.includes('<br>');
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(label, margin, yPosition);
+
+                pdf.setFont('helvetica', 'normal');
+
+                if (hasBreaks) {
+                  // Split by <br> tags and process each line
+                  const lines = valueHTML.split(/<br\s*\/?>/i).map(line => {
+                    // Strip HTML tags and trim
+                    return line.replace(/<[^>]*>/g, '').trim();
+                  }).filter(line => line.length > 0);
+
+                  let lineY = yPosition;
+                  lines.forEach((line, idx) => {
+                    const wrappedLines = pdf.splitTextToSize(line, maxWidth - 50);
+                    pdf.text(wrappedLines, margin + 50, lineY);
+                    lineY += wrappedLines.length * 4.5;
+                  });
+                  yPosition = lineY + 2;
+                } else {
+                  const value = valueCell.textContent?.trim() || '';
+                  const valueLines = pdf.splitTextToSize(value, maxWidth - 50);
+                  pdf.text(valueLines, margin + 50, yPosition);
+                  yPosition += Math.max(valueLines.length * 4.5, 6);
+                }
+              }
             }
           });
-          yPosition += 5;
+
+          if (!isSignatureTable) {
+            yPosition += 5;
+          } else {
+            yPosition += 2;
+          }
           break;
 
         case 'li':
+          if (!text) return;
           checkPageBreak(8);
           pdf.setFontSize(10);
           pdf.setFont('helvetica', 'normal');
